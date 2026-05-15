@@ -92,6 +92,8 @@ class HomeFrame(tk.Frame,):
         self.showProgres()
         os.makedirs("thumbnail", exist_ok=True)
 
+
+
         def task():
             try:
                 if self.appDestroyed.get():
@@ -101,7 +103,7 @@ class HomeFrame(tk.Frame,):
                     print("download")
                 else:
                     results = send_youtube_search_request(
-                        query, self.continuationvar.get(), "EgIQAQ%3D%3D"
+                        query, "", "EgIQAQ%3D%3D"
                     )
 
                     if self.appDestroyed.get():

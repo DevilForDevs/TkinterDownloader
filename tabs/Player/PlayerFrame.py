@@ -1,6 +1,7 @@
 import threading
 import tkinter as tk
 from tkinter import Label, X, BOTH
+from typing import Optional, Callable
 
 from tabs.Player.utils.hlseditro import create_resolution_playlists_py
 from tabs.Player.utils.streamingInfoFetcher import get_ios_player_response
@@ -14,6 +15,7 @@ class PlayerFrame(tk.Frame,):
     def __init__(
             self,
             master=None,
+            fullScreenCallBack: Optional[Callable] = None,
             **kwargs
     ):
         super().__init__(master, **kwargs)
@@ -21,11 +23,11 @@ class PlayerFrame(tk.Frame,):
 
         Label(
             self,
-            text=self.videoTitle.get(),
+            textvariable=self.videoTitle,
             anchor="w"
         ).pack(fill=X, padx=10, pady=5)
 
-        self.player = VideoPlayer(self)
+        self.player = VideoPlayer(self,fullScreenCallBack)
 
         self.player.pack(
             fill=BOTH,
@@ -33,34 +35,69 @@ class PlayerFrame(tk.Frame,):
             padx=10,
             pady=5
         )
-    def playYtVideo(self,videoId):
+
+    def playYtVideo(self, videoId):
         def backThread():
             player_response = get_ios_player_response(videoId)
-            print(player_response)
+
             if "streamingData" not in player_response:
-                self.videoTitle.set("Streaming Data Not Found")
+                self.after(
+                    0,
+                    lambda: self.videoTitle.set(
+                        "Streaming Data Not Found"
+                    )
+                )
+
                 return
 
-            hls_url = player_response["streamingData"]["hlsManifestUrl"]
+            print(player_response["streamingData"])
+            hls_url = (
+                player_response["streamingData"]
+                ["hlsManifestUrl"]
+            )
+            if hls_url is None:
+                self.after(
+                    0,
+                    lambda: self.videoTitle.set("Hls Url Missing")
+                )
+
 
             video_filename = txt2filename(
                 player_response["videoDetails"]["title"]
             )
-            self.videoTitle.set(video_filename)
+            print(player_response["videoDetails"]["title"])
+            print(video_filename)
+
+            self.after(
+                0,
+                lambda: self.videoTitle.set(video_filename)
+            )
 
             resolutions = create_resolution_playlists_py(
                 hls_url,
                 video_id=videoId,
                 files_dir="tempFiles"
             )
-            self.player.set_video_id(
-                videoId,
-                resolutions
-            )
+
             playlist_path = (
-                f"tempFiles/{videoId}({resolutions[0]}).m3u8"
+                f"tempFiles/{videoId}"
+                f"({resolutions[0]}).m3u8"
             )
-            self.player.play(playlist_path)
+
+            self.after(
+                0,
+                lambda: self.player.set_video_id(
+                    videoId,
+                    resolutions
+                )
+            )
+
+            self.after(
+                0,
+                lambda: self.player.play(
+                    playlist_path
+                )
+            )
 
         threading.Thread(
             target=backThread,

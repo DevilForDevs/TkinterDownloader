@@ -1,17 +1,23 @@
 import platform
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional, Callable
+
 import vlc
 
 from tabs.Player.widgets.seekbar import CircleSeekbar
 
 
 class VideoPlayer(tk.Frame):
-    def __init__(self, master=None, **kwargs):
+    def __init__(self, master=None,fullScreenCallBack:Optional[Callable]=None, **kwargs):
         super().__init__(master, bg="black", **kwargs)
 
         self.instance = vlc.Instance()
         self.player = self.instance.media_player_new()
+        self.fullScreenIcon=tk.StringVar()
+        self.fullScreenIcon.set("<")
+        self.fullScreenAction=fullScreenCallBack
+
 
         self.current_file = None
         self.current_video_id = None
@@ -53,9 +59,27 @@ class VideoPlayer(tk.Frame):
         elif system == "Darwin":
             self.player.set_nsobject(win_id)
 
+    def toggleFullScreen(self):
+        if self.fullScreenIcon.get()=="<":
+            self.fullScreenIcon.set(">")
+        else:
+            self.fullScreenIcon.set("<")
+        self.fullScreenAction()
+
+
     def _build_ui(self):
         bottom = self.controls_frame
         bottom.configure(padx=10, pady=10)
+
+        self.fullScreenBtn=ttk.Button(
+            bottom,
+            textvariable=self.fullScreenIcon,
+            width=2,
+            command=self.toggleFullScreen
+        )
+        self.fullScreenBtn.pack(
+            side="left", padx=(0, 5)
+        )
 
         self.selectFileButton = ttk.Button(
             bottom,

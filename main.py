@@ -50,7 +50,7 @@ class DownloaderApp(tk.Tk):
                                         continuationvar=self.continuationToken,playVideo=self.playVideo,
                                         appDestroyed=self.appDestroyed)
         self.frames["downloads"] = tk.Frame(self.body_container, bg="gray")
-        self.frames["player"] = PlayerFrame(self.body_container)
+        self.frames["player"] = PlayerFrame(self.body_container,fullScreenCallBack=self.toggleFullScreen)
         self.protocol("WM_DELETE_WINDOW", self.on_close)
         if os.path.exists("thumbnail"):
             shutil.rmtree("thumbnail")
@@ -58,6 +58,31 @@ class DownloaderApp(tk.Tk):
 
         # default screen
         self.switch("home")
+
+    def toggleFullScreen(self):
+
+        is_fullscreen = self.attributes("-fullscreen")
+
+        self.attributes(
+            "-fullscreen",
+            not is_fullscreen
+        )
+
+        if not is_fullscreen:
+
+            # hide sidebar
+            self.sidebar.pack_forget()
+
+        else:
+
+            # show sidebar
+            self.sidebar.pack(
+                side="left",
+                fill=Y,
+                padx=10,
+                pady=10
+            )
+
 
 
     def switch(self, name: str):

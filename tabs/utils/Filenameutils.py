@@ -12,5 +12,6 @@ def txt2filename(txt: str) -> str:
     for sc in special_characters:
         normal_string = normal_string.replace(sc, "")
 
+    return normal_string
 
 

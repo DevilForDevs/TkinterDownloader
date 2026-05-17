@@ -14,6 +14,7 @@ class DownloaderApp(tk.Tk):
         super().__init__()
         self.title("TkinterDownloader")
         self.continuationToken = tk.StringVar()
+        self.visitorId = tk.StringVar()
         self.collectedVideos = []
         # container for all pages
         self.body_container = tk.Frame(self,bg="red")
@@ -50,7 +51,8 @@ class DownloaderApp(tk.Tk):
                                         continuationvar=self.continuationToken,playVideo=self.playVideo,
                                         appDestroyed=self.appDestroyed)
         self.frames["downloads"] = tk.Frame(self.body_container, bg="gray")
-        self.frames["player"] = PlayerFrame(self.body_container,fullScreenCallBack=self.toggleFullScreen)
+        self.frames["player"] = PlayerFrame(self.body_container,fullScreenCallBack=self.toggleFullScreen,
+                                            visitorId=self.visitorId)
         self.protocol("WM_DELETE_WINDOW", self.on_close)
         if os.path.exists("thumbnail"):
             shutil.rmtree("thumbnail")

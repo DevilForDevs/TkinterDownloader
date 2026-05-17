@@ -49,12 +49,12 @@ def get_visitor_id() -> str:
 
 
 
-def get_ios_player_response(video_id: str) -> Any:
+def get_ios_player_response(video_id: str,visitor_id:str) -> Any:
 
     # Generate runtime params
     cpn = RandomStringGenerator.generate_content_playback_nonce()
 
-    visitor_id = get_visitor_id()
+
 
     url = (
         "https://www.youtube.com/youtubei/v1/player"
@@ -121,8 +121,7 @@ def get_ios_player_response(video_id: str) -> Any:
     response = requests.post(
         url,
         headers=headers,
-        json=body,
-        timeout=15
+        json=body
     )
 
     response.raise_for_status()

@@ -6,6 +6,7 @@ from tkinter import X, BOTH
 from typing import Optional, Callable
 
 from tabs.Home.utils.searchEndpoint import send_youtube_search_request
+from tabs.Home.utils.videoIdex import extract_video_id
 from tabs.Home.widgets.SearchBar import SearchFrame
 from tabs.Home.widgets.SearchItem import SearchItem
 from tabs.Home.widgets.SyncedProgressBar import SyncedProgressBar
@@ -99,12 +100,17 @@ class HomeFrame(tk.Frame,):
                 if self.appDestroyed.get():
                     return
 
-                if "http" in query:
-                    print("download")
+                videoId = extract_video_id(query)
+                if videoId:
+                    self.playHls(videoId)
+                    self.hideProgress()
+                    self.busy = False
+                    self.query=""
                 else:
                     results = send_youtube_search_request(
                         query, "", "EgIQAQ%3D%3D"
                     )
+
 
                     if self.appDestroyed.get():
                         return
@@ -153,5 +159,6 @@ class HomeFrame(tk.Frame,):
         print("asking")
     def playHls(self):
         print("playing")
+
 
    

@@ -106,6 +106,8 @@ class PlayerFrame(tk.Frame):
                     return
 
                 hls_url = streaming_data.get("hlsManifestUrl")
+                print(hls_url)
+
 
                 if not hls_url:
                     self._ui(
@@ -144,9 +146,14 @@ class PlayerFrame(tk.Frame):
                     )
                     return
 
+                try:
+                    resolution = resolutions[3]
+                except IndexError:
+                    resolution = resolutions[0]
+
                 playlist_path = (
                     f"tempFiles/{videoId}"
-                    f"({resolutions[0]}).m3u8"
+                    f"({resolution}).m3u8"
                 )
 
                 self._ui(

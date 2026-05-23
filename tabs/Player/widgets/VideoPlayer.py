@@ -18,6 +18,8 @@ class VideoPlayer(tk.Frame):
         self.fullScreenIcon.set("<")
         self.fullScreenAction=fullScreenCallBack
 
+        self.selected_resolution = None
+
 
         self.current_file = None
         self.current_video_id = None
@@ -31,6 +33,7 @@ class VideoPlayer(tk.Frame):
         #   "480x854": "tempFiles/abc(480x854).m3u8"
         # }
         self.available_resolutions = {}
+        self.selected_resolution = None
 
         # Create video display frame
         self.video_frame = tk.Frame(self, bg="black")
@@ -125,12 +128,19 @@ class VideoPlayer(tk.Frame):
     # =========================
 
     def set_video_id(self, video_id, resolutions):
+
         self.current_video_id = video_id
+
         self.available_resolutions.clear()
 
         for res in resolutions:
             path = f"tempFiles/{video_id}({res}).m3u8"
+
             self.available_resolutions[str(res)] = path
+
+        # default selected resolution
+        if resolutions:
+            self.selected_resolution = str(resolutions[0])
 
     def show_resolution_menu(self):
 
@@ -146,8 +156,13 @@ class VideoPlayer(tk.Frame):
 
         for resolution in sorted_res:
 
+            label = resolution
+
+            if resolution == self.selected_resolution:
+                label = f"★ {resolution}"
+
             menu.add_command(
-                label=resolution,
+                label=label,
                 command=lambda r=resolution: self.switch_resolution(r)
             )
 
@@ -161,6 +176,8 @@ class VideoPlayer(tk.Frame):
         if resolution not in self.available_resolutions:
             return
 
+        self.selected_resolution = resolution
+
         current_time = self.player.get_time()
 
         path = self.available_resolutions[resolution]
@@ -173,13 +190,13 @@ class VideoPlayer(tk.Frame):
 
         self.player.play()
 
-        # restore playback position
         def restore():
             self.player.set_time(current_time)
 
         self.after(1200, restore)
 
         self.is_playing = True
+
         self.play_btn.config(text="⏸")
 
     # =========================

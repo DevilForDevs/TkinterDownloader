@@ -1,10 +1,14 @@
 import os
 import shutil
+import threading
 import tkinter as tk
 from tkinter.constants import RIGHT, BOTH, Y
 
+from requests import Session
+
 from tabs.Home.HomeFrame import HomeFrame
 from tabs.Player.PlayerFrame import PlayerFrame
+from tabs.Player.utils.streamingInfoFetcher import get_visitor_id
 from widgets.SidebarFrame import SidebarFrame
 
 
@@ -12,6 +16,7 @@ class DownloaderApp(tk.Tk):
 
     def __init__(self):
         super().__init__()
+        self.session = Session()
         self.title("TkinterDownloader")
         self.continuationToken = tk.StringVar()
         self.visitorId = tk.StringVar()
@@ -57,9 +62,19 @@ class DownloaderApp(tk.Tk):
         if os.path.exists("thumbnail"):
             shutil.rmtree("thumbnail")
 
-
         # default screen
         self.switch("home")
+        threading.Thread(
+            target=self.setupVisitorId,
+            daemon=True
+        ).start()
+
+
+    def setupVisitorId(self):
+        visiID=get_visitor_id()
+        print(visiID)
+        self.visitorId.set(visiID)
+
 
     def toggleFullScreen(self):
 

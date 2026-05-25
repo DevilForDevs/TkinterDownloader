@@ -1,163 +1,110 @@
-from typing import Any
-
-from tabs.utils.RandomStringGenerator import RandomStringGenerator
 import requests
 
+from tabs.utils.RandomStringGenerator import RandomStringGenerator
 
-def get_visitor_id() -> str:
-    url = (
-        "https://www.youtube.com/youtubei/v1/visitor_id"
-        "?prettyPrint=false"
-    )
 
-    body = {
+def get_visitor_id():
+    url = 'https://youtubei.googleapis.com/youtubei/v1/visitor_id?prettyPrint=false'
+    json_body = {
         "context": {
             "client": {
-                "clientName": "IOS",
-                "clientVersion": "21.03.2",
+                "clientName": "ANDROID",
+                "clientVersion": "21.03.36",
                 "clientScreen": "WATCH",
                 "platform": "MOBILE",
-
-                "deviceMake": "Apple",
-                "deviceModel": "iPhone16,2",
-
-                "osName": "iOS",
-                "osVersion": "18.7.2.22H124",
-
+                "osName": "Android",
+                "osVersion": "16",
+                "androidSdkVersion": 36,
                 "hl": "en-GB",
                 "gl": "GB",
-
-                "utcOffsetMinutes": 0
+                "utcOffsetMinutes": 0,
             },
-
             "request": {
                 "internalExperimentFlags": [],
-                "useSsl": True
+                "useSsl": True,
             },
-
             "user": {
-                "lockedSafetyMode": False
-            }
+                "lockedSafetyMode": False,
+            },
         }
     }
-
     headers = {
-        "User-Agent": (
-            "com.google.ios.youtube/21.03.2"
-            "(iPhone16,2; U; CPU iOS 18_7_2 like Mac OS X; GB)"
-        ),
-
-        "Content-Type": "application/json",
-
+        "User-Agent": "com.google.android.youtube/21.03.36 (Linux; U; Android 15; GB) gzip",
         "X-Goog-Api-Format-Version": "2",
-
-        "X-Youtube-Client-Name": "5",
-
-        "X-Youtube-Client-Version": "21.03.2",
-
-        "Accept-Language": "en-GB,en;q=0.9"
+        "Content-Type": "application/json",
+        "Accept-Language": "en-GB, en;q=0.9",
     }
-
-    params = {
-        "prettyPrint": "false"
-    }
-
-    response = requests.post(
-        url,
-        headers=headers,
-        params=params,
-        json=body
-    )
-
-    response.raise_for_status()
-
+    response = requests.post(url, headers=headers, json=json_body)
+    if response.status_code != 200:
+        raise Exception(f"Request failed: {response.status_code}\n{response.text}")
     data = response.json()
-
     return data["responseContext"]["visitorData"]
 
 
 
-
-def get_ios_player_response(video_id: str, visitor_id: str) -> Any:
-
+def android_player_response(
+    video_id: str,
+) -> dict:
     cpn = RandomStringGenerator.generate_content_playback_nonce()
     t = RandomStringGenerator.generate_t_parameter()
+    visitor_data=get_visitor_id()
 
-    url = "https://youtubei.googleapis.com/youtubei/v1/player"
+    url = (
+        "https://youtubei.googleapis.com/youtubei/v1/reel/reel_item_watch"
+        f"?prettyPrint=false&t={t}&id={video_id}&$fields=playerResponse"
+    )
+
+    json_body = {
+        "context": {
+            "client": {
+                "clientName": "ANDROID",
+                "clientVersion": "21.03.36",
+                "clientScreen": "WATCH",
+                "platform": "MOBILE",
+                "osName": "Android",
+                "osVersion": "16",
+                "androidSdkVersion": 36,
+                "hl": "en-GB",
+                "gl": "GB",
+                "utcOffsetMinutes": 0,
+                "visitorData": visitor_data,
+            },
+            "request": {
+                "internalExperimentFlags": [],
+                "useSsl": True,
+            },
+            "user": {
+                "lockedSafetyMode": False,
+            },
+        },
+        "playerRequest": {
+            "videoId": video_id,
+            "cpn": cpn,
+            "contentCheckOk": True,
+            "racyCheckOk": True,
+        },
+        "disablePlayerResponse": False,
+    }
 
     headers = {
         "User-Agent": (
-            "com.google.ios.youtube/21.03.2"
-            "(iPhone16,2; U; CPU iOS 18_7_2 like Mac OS X; GB)"
+            "com.google.android.youtube/21.03.36 "
+            "(Linux; U; Android 15; GB) gzip"
         ),
-
-        "Content-Type": "application/json",
-
         "X-Goog-Api-Format-Version": "2",
-
-        "X-Youtube-Client-Name": "5",
-
-        "X-Youtube-Client-Version": "21.03.2",
-
-        "Accept-Language": "en-GB,en;q=0.9"
-    }
-
-    params = {
-        "prettyPrint": "false",
-        "t": t,
-        "id": video_id
-    }
-
-    body = {
-        "context": {
-            "client": {
-                "clientName": "IOS",
-                "clientVersion": "21.03.2",
-                "clientScreen": "WATCH",
-                "platform": "MOBILE",
-
-                "visitorData": visitor_id,
-
-                "deviceMake": "Apple",
-                "deviceModel": "iPhone16,2",
-
-                "osName": "iOS",
-                "osVersion": "18.7.2.22H124",
-
-                "hl": "en-GB",
-                "gl": "GB",
-
-                "utcOffsetMinutes": 0
-            },
-
-            "request": {
-                "internalExperimentFlags": [],
-                "useSsl": True
-            },
-
-            "user": {
-                "lockedSafetyMode": False
-            }
-        },
-
-        "videoId": video_id,
-
-        "cpn": cpn,
-
-        "contentCheckOk": True,
-        "racyCheckOk": True
+        "Content-Type": "application/json",
+        "Accept-Language": "en-GB, en;q=0.9",
     }
 
     response = requests.post(
         url,
         headers=headers,
-        params=params,
-        json=body
+        json=json_body,
     )
 
-    response.raise_for_status()
+    if response.status_code != 200:
+        raise Exception(
+            f"Request failed: {response.status_code}\n{response.text}"
+        )
 
-    data = response.json()
-
-
-    return data
+    return response.json()

@@ -17,7 +17,7 @@ class DownloaderApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.session = Session()
-        self.title("TkinterDownloader")
+        self.title("YtPlayer")
         self.continuationToken = tk.StringVar()
         self.visitorId = tk.StringVar()
         self.collectedVideos = []
@@ -72,7 +72,6 @@ class DownloaderApp(tk.Tk):
 
     def setupVisitorId(self):
         visiID=get_visitor_id()
-        print(visiID)
         self.visitorId.set(visiID)
 
 

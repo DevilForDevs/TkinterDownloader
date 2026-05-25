@@ -3,10 +3,10 @@ import tkinter as tk
 from tkinter import Label, X, BOTH
 from typing import Optional, Callable
 
-from tabs.Player.utils.hlseditro import create_resolution_playlists_py
+from tabs.Player.utils.createresolutionlist import get_videos_by_codec
+from tabs.Player.utils.get_audio_by_itag import get_audio_by_itag
 from tabs.Player.utils.streamingInfoFetcher import (
-    get_ios_player_response,
-    get_visitor_id
+    get_visitor_id, android_player_response
 )
 from tabs.Player.widgets.VideoPlayer import VideoPlayer
 from tabs.utils.Filenameutils import txt2filename
@@ -71,118 +71,70 @@ class PlayerFrame(tk.Frame):
             return current_request != self._request_id
 
         def backThread():
-
             try:
+                self._ui(lambda: self.videoTitle.set("Fetching streaming data..."))
 
-                # NEVER access tkinter variables directly in worker thread
-                visitor_id = self.visitorId.get()
+                retries = 3
+                resolutions = []
 
-                if visitor_id == "":
-                    visitor_id = get_visitor_id()
+                for attempt in range(retries):
 
-                    if is_outdated():
-                        return
+                    player_response = android_player_response(
+                        video_id=videoId
+                    )
+                    self._ui(lambda: self.videoTitle.set("Parsing streaming data..."))
 
-                    self._ui(
-                        lambda: self.visitorId.set(visitor_id)
+                    streaming_data = player_response["playerResponse"]["streamingData"]
+
+                    mp4Resolutions = get_videos_by_codec(
+                        streaming_data["adaptiveFormats"],
+                        ["avc1"],
+                        fallback_codecs=["vp9"]
                     )
 
-                player_response = get_ios_player_response(
-                    videoId,
-                    visitor_id
-                )
+                    # Retry if empty
+                    if not mp4Resolutions:
+                        print(f"No video formats found. Retry {attempt + 1}/{retries}")
+                        continue
 
-                if is_outdated():
-                    return
+                    audio140 = get_audio_by_itag(
+                        streaming_data["adaptiveFormats"],
+                        140,
+                        251
+                    )
 
-                streaming_data = player_response.get("streamingData")
-
-                if not streaming_data:
-                    self._ui(
-                        lambda: self.videoTitle.set(
-                            "Streaming Data Not Found"
+                    for res in mp4Resolutions:
+                        resolutions.append(
+                            {
+                                "height": res["height"],
+                                "video": res["url"],
+                                "selected": False,
+                                "audio": audio140["url"]
+                            }
                         )
-                    )
-                    return
+                    self._ui(lambda: self.videoTitle.set(txt2filename(player_response["playerResponse"]["videoDetails"]["title"])))
 
-                hls_url = streaming_data.get("hlsManifestUrl")
-                print(hls_url)
-
-
-                if not hls_url:
-                    self._ui(
-                        lambda: self.videoTitle.set(
-                            "HLS URL Missing"
-                        )
-                    )
-                    return
-
-                title = (
-                    player_response
-                    .get("videoDetails", {})
-                    .get("title", "Unknown Video")
-                )
-
-                video_filename = txt2filename(title)
-
-                self._ui(
-                    lambda: self.videoTitle.set(video_filename)
-                )
-
-                resolutions = create_resolution_playlists_py(
-                    hls_url,
-                    video_id=videoId,
-                    files_dir="tempFiles"
-                )
-
-                if is_outdated():
-                    return
+                    break  # stop retry loop if successful
 
                 if not resolutions:
-                    self._ui(
-                        lambda: self.videoTitle.set(
-                            "No Resolutions Found"
-                        )
-                    )
-                    return
+                    self._ui(lambda: self.videoTitle.set("No playable formats found"))
+                    raise Exception("No playable video formats found")
 
-                try:
-                    resolution = resolutions[3]
-                except IndexError:
-                    resolution = resolutions[0]
+                if resolutions:
+                    if len(resolutions) >= 3:
+                        resolutions[2]["selected"] = True
+                    else:
+                        resolutions[-1]["selected"] = True
 
-                playlist_path = (
-                    f"tempFiles/{videoId}"
-                    f"({resolution}).m3u8"
-                )
+                self.player.play(resolutions)
 
-                self._ui(
-                    lambda: self.player.set_video_id(
-                        videoId,
-                        resolutions
-                    )
-                )
 
-                self._ui(
-                    lambda: self.player.play(
-                        playlist_path
-                    )
-                )
 
             except Exception as e:
-
                 if is_outdated():
                     return
 
-                self._ui(
-                    lambda: self.videoTitle.set(
-                        f"Error: {str(e)}"
-                    )
-                )
-
+                self._ui(lambda: self.videoTitle.set(f"Error: {str(e)}"))
                 print("Player thread error:", e)
 
-        threading.Thread(
-            target=backThread,
-            daemon=True
-        ).start()
+        threading.Thread(target=backThread, daemon=True).start()

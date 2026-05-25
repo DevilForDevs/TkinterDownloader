@@ -11,9 +11,6 @@ To play video using this app your pc must have vlc installed.
     <img src="https://img.shields.io/badge/Download-Windows_EXE-0078D6?style=for-the-badge&logo=windows&logoColor=white" />
   </a>
 </p>
-
----
-
 ---
 ## Related Project
 

@@ -14,6 +14,16 @@ To play video using this app your pc must have vlc installed.
 
 ---
 
+---
+## Related Project
+
+<p align="center">
+  <a href="https://github.com/DevilForDevs/YoutubeCloneAndroidXML">
+    <img src="https://img.shields.io/badge/Related_Project-YouTube_Clone_XML-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
+  </a>
+</p>
+
+
 # Preview
 
 ## Search Results Screen

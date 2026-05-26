@@ -1,8 +1,25 @@
 # TkinterDownloader
 
-A modern desktop YouTube browser and HLS video player built with Python, Tkinter, and VLC.
+A modern desktop YouTube video query and dashed video player built with Python, Tkinter, and VLC.
 
----
+To play video using this app your pc must have vlc installed.
+
+## Download
+
+<p align="center">
+  <a href="https://github.com/DevilForDevs/TkinterDownloader/releases">
+    <img src="https://img.shields.io/badge/Download-Windows_EXE-0078D6?style=for-the-badge&logo=windows&logoColor=white" />
+  </a>
+</p>
+
+## Related Project
+
+<p align="center">
+  <a href="https://github.com/DevilForDevs/YoutubeCloneAndroidXML">
+    <img src="https://img.shields.io/badge/Related_Project-YouTube_Clone_XML-FF0000?style=for-the-badge&logo=youtube&logoColor=white" />
+  </a>
+</p>
+
 
 # Preview
 
@@ -29,7 +46,6 @@ A modern desktop YouTube browser and HLS video player built with Python, Tkinter
 - YouTube search using hidden internal APIs
 - Smooth threaded loading
 - Embedded VLC video player
-- Dynamic HLS playlist generation
 - Resolution switching during playback
 - Fullscreen support
 - Sidebar navigation
@@ -64,7 +80,6 @@ Features:
 The player uses:
 
 - `python-vlc`
-- generated `.m3u8` playlists
 - dynamic resolution switching
 
 Playback is handled using VLC while Tkinter manages the UI layer.
@@ -79,26 +94,10 @@ Threading is used for:
 
 - YouTube search requests
 - Thumbnail downloading
-- HLS manifest parsing
 - Playlist generation
 - Video metadata fetching
 
 This keeps the Tkinter UI responsive during network operations.
-
----
-
-# HLS Resolution Switching
-
-The player dynamically creates resolution-specific playlists from the original YouTube HLS manifest.
-
-Example generated playlists:
-
-```text
-tempFiles/videoId(192x144).m3u8
-tempFiles/videoId(640x360).m3u8
-tempFiles/videoId(1280x720).m3u8
-```
-
 Users can switch quality during playback without restarting the player.
 
 ---

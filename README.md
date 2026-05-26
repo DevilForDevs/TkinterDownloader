@@ -35,6 +35,11 @@ To play video using this app your pc must have vlc installed.
 
 ---
 
+## Embedded Player with Suggestions
+![Player Screen](https://github.com/user-attachments/assets/5e2ddcc4-666e-462e-8ac7-be5c16f96d9b)
+
+---
+
 ## Fullscreen Player
 
 ![Fullscreen Player](https://github.com/user-attachments/assets/86470259-0541-4388-9499-d843fd733f44)

@@ -72,13 +72,14 @@ class PlayerFrame(tk.Frame):
     # ---------------- MAIN PLAY ----------------
     def playYtVideo(self, videoId: str):
         self.videoId = videoId
-
         for child in self.container.winfo_children():
             if child not in self.keep_widgets:
                 try:
                     child.destroy()
                 except:
                     pass
+        self.scroll.scroll_to_top()
+        self.update()
 
         self.player.toggle_play()
 
@@ -99,7 +100,9 @@ class PlayerFrame(tk.Frame):
                 for i in range(retries):
                     print(f"Try {i}")
                     self.busy = True
+                    self.update()
                     player = android_player_response(videoId)
+                    self.update()
                     streaming = player["playerResponse"]["streamingData"]
 
                     self._ui(lambda: self.videoTitle.set("Processing streams..."))
@@ -146,6 +149,7 @@ class PlayerFrame(tk.Frame):
 
                 self.player.play(resolutions)
                 self.busy = False
+                self.update()
 
                 self.loadSuggestions(videoId, req_id)
 
@@ -164,6 +168,7 @@ class PlayerFrame(tk.Frame):
 
         def worker():
             try:
+
                 if not self.visitorData:
                     visitor_data, client_version, _ = get_web_visitor_and_client_from_html()
                     self.visitorData = visitor_data      # ← was never stored before
@@ -172,13 +177,14 @@ class PlayerFrame(tk.Frame):
                 if outdated():
                     return
                 self.loadingSuggestions=True
-
+                self.update()
                 result = get_suggestions(
                     video_id=videoId,
                     continuation=None,
                     visitor_data=self.visitorData,
                     client_version=self.clientVersion
                 )
+                self.update()
 
                 if outdated():
                     return
@@ -187,6 +193,7 @@ class PlayerFrame(tk.Frame):
                 self.continuationToken.set(parsed["continuation"])
 
                 os.makedirs("thumbnail", exist_ok=True)
+                self.update()
 
                 for vid in parsed["videos"]:
                     if vid["title"]=="shorts":
@@ -251,45 +258,44 @@ class PlayerFrame(tk.Frame):
             try:
                 if outdated():
                     return
-                # currently this block causing removal of player and title
-                # self.loadingSuggestions=True
-                # result = get_suggestions(
-                #     video_id=self.videoId,
-                #     continuation=self.continuationToken.get(),
-                #     visitor_data=self.visitorData,
-                #     client_version=self.clientVersion
-                # )
-                #
-                # if outdated():
-                #     return
-                #
-                # parsed = parse_watch_json(result, "watchContinuation")
-                # if parsed["continuation"] is not None:
-                #     self.continuationToken.set(parsed["continuation"])
-                #
-                # os.makedirs("thumbnail", exist_ok=True)
-                #
-                # for vid in parsed["videos"]:
-                #     if vid["title"]=="shorts":
-                #         continue
-                #     if vid["playlistId"] is not None:
-                #         continue
-                #     if outdated() or self.busy:
-                #         return
-                #
-                #     vid_id = vid["videoId"]
-                #     thumb = f"thumbnail/{vid_id}.jpg"
-                #     if not os.path.exists(thumb):
-                #         urllib.request.urlretrieve(
-                #             f"https://img.youtube.com/vi/{vid_id}/hqdefault.jpg",
-                #             thumb
-                #         )
-                #
-                #     if outdated():
-                #         return
-                #
-                #     self._ui(lambda v=vid: self._addSuggestion(v))
-                # self.loadingSuggestions=False
+                self.loadingSuggestions=True
+                result = get_suggestions(
+                    video_id=self.videoId,
+                    continuation=self.continuationToken.get(),
+                    visitor_data=self.visitorData,
+                    client_version=self.clientVersion
+                )
+
+                if outdated():
+                    return
+
+                parsed = parse_watch_json(result, "watchContinuation")
+                if parsed["continuation"] is not None:
+                    self.continuationToken.set(parsed["continuation"])
+
+                os.makedirs("thumbnail", exist_ok=True)
+
+                for vid in parsed["videos"]:
+                    if vid["title"]=="shorts":
+                        continue
+                    if vid["playlistId"] is not None:
+                        continue
+                    if outdated() or self.busy:
+                        return
+
+                    vid_id = vid["videoId"]
+                    thumb = f"thumbnail/{vid_id}.jpg"
+                    if not os.path.exists(thumb):
+                        urllib.request.urlretrieve(
+                            f"https://img.youtube.com/vi/{vid_id}/hqdefault.jpg",
+                            thumb
+                        )
+
+                    if outdated():
+                        return
+
+                    self._ui(lambda v=vid: self._addSuggestion(v))
+                self.loadingSuggestions=False
             except Exception as e:
                 print("Suggestion error:", e)
 

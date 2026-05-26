@@ -57,6 +57,21 @@ class ScrollableFrame(tk.Frame):
         self.canvas.unbind_all("<Button-4>")
         self.canvas.unbind_all("<Button-5>")
 
+    def scroll_to_top(self):
+        current = self.canvas.yview()[0]
+
+        def step():
+            nonlocal current
+            if current <= 0:
+                return
+            current -= 0.1
+            if current < 0:
+                current = 0
+            self.canvas.yview_moveto(current)
+            self.after(10, step)
+
+        step()
+
     def _on_mousewheel(self, event):
         if event.num == 4:  # Linux scroll up
             self.canvas.yview_scroll(-1, "units")

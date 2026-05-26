@@ -1,6 +1,6 @@
-# TkinterDownloader
+# TkinterYoutubeVideoPlayer
 
-A modern desktop YouTube video query and dashed video player built with Python, Tkinter, and VLC.
+A classic desktop YouTube video query and dashed video player built with Python, Tkinter, and VLC.
 
 To play video using this app your pc must have vlc installed.
 

@@ -154,11 +154,47 @@ class HomeFrame(tk.Frame,):
 
 
     def reachedBottom(self):
-        print("reachedbottom")
+        if self.busy:
+            return
+        continuation=self.continuationvar.get()
+        if continuation=="":
+            return
+        print("getting items")
+        def backThread():
+            self.busy = True
+            self.showProgres()
+            results = send_youtube_search_request(self.query, continuation=continuation, params="EgIQAQ%3D%3D")
+            self.hideProgress()
+            self.continuationvar.set(results["continuation"])
+            videos = results["videos"]
+            for v in videos:
+                if self.appDestroyed.get():
+                    return
+
+                if v["videoId"] not in [x["videoId"] for x in self.syncList]:
+                    vid = v["videoId"]
+                    self.syncList.append(v)
+
+                    urllib.request.urlretrieve(
+                        f"https://img.youtube.com/vi/{vid}/hqdefault.jpg",
+                        f"thumbnail/{vid}.jpg"
+                    )
+                    SearchItem(
+                        self.scrollFrame.scrollable_frame,
+                        bd=2, relief="groove",
+                        vid=vid,
+                        title=v["title"],
+                        duration=v["duration"],
+                        formatSelect=self.askResolution,
+                        playhls=self.playHls
+                    ).pack(fill=X, pady=5)
+            self.busy = False
+
+        threading.Thread(target=backThread).start()
+
     def askResolution(self):
         print("asking")
-    def playHls(self):
-        print("playing")
+
 
 
    

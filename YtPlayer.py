@@ -8,14 +8,20 @@ from requests import Session
 
 from tabs.Home.HomeFrame import HomeFrame
 from tabs.Player.PlayerFrame import PlayerFrame
-from tabs.Player.utils.streamingInfoFetcher import get_visitor_id
+from tabs.utils.Filenameutils import resource_path
 from widgets.SidebarFrame import SidebarFrame
+
+
+
+
 
 
 class DownloaderApp(tk.Tk):
 
+
     def __init__(self):
         super().__init__()
+        self.iconbitmap(resource_path("assets\\icon.ico"))
         self.session = Session()
         self.title("YtPlayer")
         self.continuationToken = tk.StringVar()
@@ -64,15 +70,10 @@ class DownloaderApp(tk.Tk):
 
         # default screen
         self.switch("home")
-        threading.Thread(
-            target=self.setupVisitorId,
-            daemon=True
-        ).start()
 
 
-    def setupVisitorId(self):
-        visiID=get_visitor_id()
-        self.visitorId.set(visiID)
+
+
 
 
     def toggleFullScreen(self):

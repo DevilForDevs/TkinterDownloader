@@ -1,5 +1,16 @@
+import os
+import sys
 
 
+def resource_path(relative_path):
+    try:
+        # PyInstaller onefile mode
+        base_path = sys._MEIPASS
+    except Exception:
+        # normal script mode
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 def txt2filename(txt: str) -> str:
     special_characters = [
